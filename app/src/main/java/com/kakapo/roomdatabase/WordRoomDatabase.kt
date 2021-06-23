@@ -1,6 +1,37 @@
 package com.kakapo.roomdatabase
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
 
-abstract class WordRoomDatabase {
+// Annotates class to be a Room Database with a table (entity) of the word class
+@Database(entities = [Word::class], version = 1, exportSchema = false)
+abstract class WordRoomDatabase : RoomDatabase(){
+
+    abstract fun wordDao() : WordDao
+
+    companion object{
+        //singleton prevent multiple instance of database opening at
+        //the same time
+
+        @Volatile
+        private var INSTANCE: WordRoomDatabase? = null
+
+        fun getDatabase(context: Context): WordRoomDatabase{
+            // if the INSTANCE is not null, then return it
+            // if it is, then create the database
+            return INSTANCE ?: synchronized(this){
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    WordRoomDatabase::class.java,
+                    "word_database"
+                ).build()
+
+                INSTANCE = instance
+                instance
+            }
+        }
+
+    }
 }
